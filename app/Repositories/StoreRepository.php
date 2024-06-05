@@ -46,12 +46,8 @@ class StoreRepository extends ApiRepository
 
     public function getList(Request $request)
     {
-        $request = $request->only([
-            'name',
-            'location',
-            'user_id'
-        ]);
-        $builder = $this->model->where('name','LIKE','%'.$request['name'].'%');
+        $builder = $this->model->query();
+        $request = $request->toArray();
 
         if (data_get($request,'name',  null)) {
             $builder->where('name','LIKE','%'.$request['name'].'%');
@@ -61,9 +57,8 @@ class StoreRepository extends ApiRepository
             $builder->where('location','LIKE','%'.$request['location'].'%');
         }
 
-        if (data_get($request,'user_id',  null)) {
-            $builder->where('user_id', $request['user_id']);
-        }
+        $builder->with('products');
+        $builder->with('users');
 
         return $builder->paginate($this->paginateLimit);
     }

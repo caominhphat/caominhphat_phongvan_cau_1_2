@@ -4,7 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+
 
 class ProductRepository extends ApiRepository
 {
@@ -49,24 +49,28 @@ class ProductRepository extends ApiRepository
 
     public function getList(Request $request)
     {
-        $request = $request->only([
-            'name',
-            'price',
-            'store_id'
-        ]);
-        $builder = $this->model;
+        $builder = $this->model->query();
+        $request = $request->toArray();
 
-        if ($request['name']) {
-            $builder->where(DB::raw('LOWER(name)'), 'LIKE', '%'.strtolower($request['name']).'%');
+        if (data_get($request, 'name', null)) {
+            $builder->where('name', 'LIKE', '%'.strtolower($request['name']).'%');
         }
 
         if (data_get($request, 'price', null)) {
-            $builder->where('price','LIKE','%'.$request['price'].'%');
+            $price = json_decode($request['price'], true);
+            if ($price && array_key_exists('min', $price) && array_key_exists('max', $price)) {
+                $min = $price['min'];
+                $max = $price['max'];
+                if ($min > $max) {
+                    $min = $price['max'];
+                    $max = $price['min'];
+                }
+
+                $builder->whereBetween('price',[$min, $max]);
+            }
         }
 
-        if (data_get($request,'store_id',null)) {
-            $builder->where('store_id', $request['store_id']);
-        }
+        $builder->with('stores');
 
         return $builder->paginate($this->paginateLimit);
     }

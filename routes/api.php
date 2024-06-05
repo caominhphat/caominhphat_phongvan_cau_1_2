@@ -1,7 +1,6 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -17,7 +16,9 @@ use Illuminate\Support\Facades\Route;
 Route::group(['prefix' => 'authorize'], function () {
     Route::controller(\App\Http\Controllers\Api\AuthController::class)->group(function (){
         Route::post('login', 'login');
-        Route::any('logout', 'logout');
+        Route::any('unauthenticated', function () {
+            return response('Please login', Response::HTTP_UNAUTHORIZED);
+        })->name('login');
     });
 });
 
@@ -35,10 +36,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::controller(\App\Http\Controllers\Api\StoreController::class)->group(function () {
         Route::group(['prefix' => 'store'], function () {
             Route::get('/', 'index');
+            Route::get('/detail/{id}', 'detail')->where('id', '[0-9]+');
             Route::delete('delete/{id}', 'delete')->where('id', '[0-9]+');
             Route::put('update', 'update');
             Route::post('create', 'create');
         });
     });
+
+    Route::any('logout', '\App\Http\Controllers\Api\AuthController@logout');
 });
 

@@ -17,10 +17,10 @@ class Store extends Model
     ];
 
     public function products() {
-        $this->hasMany(Product::class);
+        return $this->hasMany(Product::class, 'store_id', 'id');
     }
 
     public function users() {
-        $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id', 'id');
     }
 }

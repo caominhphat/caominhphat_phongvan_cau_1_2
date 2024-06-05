@@ -35,7 +35,7 @@ class AuthController
 
             return response('check email, password', Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch(\Exception $exception) {
-            return response('get token fails', Response::HTTP_INTERNAL_SERVER_ERROR);
+            return response($exception->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
     }
